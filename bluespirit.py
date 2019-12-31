@@ -3,12 +3,18 @@
 from InstagramAPI import InstagramAPI
 import getpass
 import argparse
-import time
+import unicodedata
+
+def strip_accents(s):
+   return ''.join(c for c in unicodedata.normalize('NFD', s)
+                  if unicodedata.category(c) != 'Mn')
 
 parser = argparse.ArgumentParser(description="Blue Spirit Instagram Snooping Tool")
 #parser.add_argument("-u", help="Username to use for login", metavar="USERNAME", dest="myUsername", nargs=1, type=str, action="store", required=True)
 parser.add_argument("-f", help="Show users who do not follow you back", dest="searchFakes", action="store_true")
+parser.add_argument("-i", help="Intensity of target scan: 1-Basic Name Search, 2-Adaptive Name Search", dest="intensity", nargs=1, type=int, action="store")
 parser.add_argument("-t", help="Username to target for snooping - can take multiple usernames", dest="tgtUsernames", nargs=argparse.REMAINDER, type=str, action="store")
+
 args = parser.parse_args()
 tgtUsernames = args.tgtUsernames
 
@@ -30,6 +36,7 @@ api.getProfileData()
 myProfile = api.LastJson
 
 print(f"USERNAME: {myProfile['user']['username']} \nNAME: {myProfile['user']['full_name']} \nID: {myProfile['user']['pk']}")
+print(myProfile)
 
 if args.searchFakes:
     myFollowers = api.getTotalSelfFollowers()
@@ -83,9 +90,16 @@ for targetName in tgtUsernames:
     
     foundRealName = foundRealName.split(" ")
 
-    foundLastName = foundRealName[-1]
+    foundLastNames = []
+    foundLastNames.append(foundRealName[-1])    # Raw name
+    foundLastNames.append(strip_accents(foundLastNames[0]))     # Name stripped of accents
+    foundLastNames.append(foundLastNames[0].lower())    # Raw name as lowercase
+    foundLastNames.append(foundLastNames[1].lower())    # Stripped name as lowercase
 
-    print(f"LAST NAME: {foundLastName}")
+    #TODO: Remove duplicates
+    #TODO: ask for search intensity, if strong, make new names of related names
+
+    print(f"SEARCHING FOR: {foundLastNames}")
 
     # Get complete list of followers and following for parsing
     foundFollowersRaw = api.getTotalFollowers(foundID)      
@@ -97,21 +111,39 @@ for targetName in tgtUsernames:
         personUser = user['username']
         personReal = user['full_name']
 
-        if personUser.find(foundLastName) != -1 or personReal.find(foundLastName) != -1:
-            foundFamily.append(user)
+        for lastName in foundLastNames:
+            if personUser.find(lastName) != -1 or personReal.find(lastName) != -1:
+                foundFamily.append(user)
     
     for user in foundFollowingRaw:
         personUser = user['username']
         personReal = user['full_name']
 
-        if personUser.find(foundLastName) != -1 or personReal.find(foundLastName) != -1:
-            foundFamily.append(user)
+        for lastName in foundLastNames:
+            if personUser.find(lastName) != -1 or personReal.find(lastName) != -1:
+                foundFamily.append(user)
 
     # TODO: check for variations in spelling, maybe make flag for more time and remove accents
-    print(f"FOUND FAMILY: {foundFamily}\n\n\n")
-    for member in foundFamily:
-        print(member['full_name'])
-    
 
-#api.getUsernameInfo()
+    # Delete duplicate family members found
+    uniqueFamily = [] 
+    for i in foundFamily: 
+        if i not in uniqueFamily: 
+            uniqueFamily.append(i) 
+
+    print(f"FOUND FAMILY: {uniqueFamily}\n\n\n")
+    for member in uniqueFamily:
+        print(member['username'])
+    
+    #TODO: Remove duplicates
+
+    ########### START SIGNIFICANT OTHER REPORTING ################
+
+    foundBio = myProfile['biography']
+
+    # First splits bio into words/phrases
+    # Then searches for two character phrases or initials in form of X.X.
+
+    # TODO: Implement search for date in bio, then match date/numbers to followers/following
+    foundBioSplit = foundBio.split(" ")
 
