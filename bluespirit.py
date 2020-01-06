@@ -4,6 +4,8 @@ from InstagramAPI import InstagramAPI
 import getpass
 import argparse
 import unicodedata
+import re
+import time
 
 def strip_accents(s):
    return ''.join(c for c in unicodedata.normalize('NFD', s)
@@ -139,11 +141,99 @@ for targetName in tgtUsernames:
 
     ########### START SIGNIFICANT OTHER REPORTING ################
 
-    foundBio = myProfile['biography']
+    foundBio = foundUser['user']['biography']
 
     # First splits bio into words/phrases
     # Then searches for two character phrases or initials in form of X.X.
 
     # TODO: Implement search for date in bio, then match date/numbers to followers/following
     foundBioSplit = foundBio.split(" ")
+
+    initialsList = []
+    dateList = []
+    # ^([A-Z]\.)+$
+    # CHecks for format like X.X. and X. and XX
+    initialFormat = re.compile('^([A-Z]?(\.)?){1,3}$')
+    dateFormat = re.compile('^.{0,2}[/,\-,.].{0,2}[/,\-,.].{2,4}$')
+    for phrase in foundBioSplit:
+        print(f"Checking Phrase: {phrase}")
+        # Checks for Format X.X.
+        if initialFormat.match(phrase):
+            initialsList.append(phrase)
+            print(f"APPENDING INITIAL: {phrase}")
+        # Checks for date format MM/DD/YYYY
+        elif dateFormat.match(phrase):
+            dateList.append(phrase)
+            print(f"APPENDING DATE: {phrase}")
+
+        # TODO: Check for uppercase to avoid words like 'to' and 'an'
+    
+    # Prepare initials as alphabetical chars only for comparison with follower/ing
+    for initials in initialsList:
+        initials = ''.join(filter(str.isalpha, initials))
+        #TODO: might have to make according list to match parsed intiials
+    
+    # Prepare date as numbers only for comparison with follower/ing
+    for date in dateList:
+        if date.find("/") != -1:
+            searchDates = date.split('/')
+        elif date.find("-") != -1:
+            searchDates = date.split('-')
+        if date.find(".") != -1:
+            searchDates = date.split('.')
+    
+
+    # SEARCHING FOLLOWER/ING 
+
+    if len(initialsList) != 0 or len(dateList) != 0:
+        # TODO: Find a way to speed this up?
+        # TODO: Add delay to prevent max API requests per minute?
+        foundFollowersInfo = []
+        foundFollowingInfo = []
+
+        # TODO: Sleep for seconds based on error message instead of amount of calls made
+        APITimer = 0
+        for user in foundFollowersRaw:
+            print(f"SEARCHING FOR FOLLOWER: {user['username']}")
+            api.searchUsername(user['username'])
+            foundFollowerInfo = api.LastJson
+            foundFollowersInfo.append(foundFollowerInfo)
+            APITimer += 1
+
+            # Waits 2 seconds per 50 API calls to prevent generating errors
+            if APITimer >= 50:
+                time.sleep(2)
+                APITimer = 0
+
+        APITimer = 0
+        for user in foundFollowingRaw:
+            print(f"SEARCHING FOR FOLLOWING: {user['username']}")
+            api.searchUsername(user['username'])
+            foundFollowingInfo = api.LastJson
+            foundFollowingsInfo.append(foundFollowingInfo)
+            APITimer += 1
+
+            # Waits 2 seconds per 50 API calls to prevent generating errors
+            if APITimer >= 80:
+                time.sleep(2)
+                APITimer = 0
+
+        for user in foundFollowersInfo:
+            #TODO: Also work on parsing username for initials
+            #TODO: Parse bio/name for initials/date
+            userName = user['full_name'].split(' ')
+            userBio = user['biography'].split(' ')
+
+            for initials in initialsList:
+                # Checks first and last name for initial
+                # TODO: handle lower/uppercase letters
+                if userName[0][0] == intials[0] and userName[-1][0] == initials[-1]:
+                    print(f"Initial matched with {user['username']}")
+                
+            for phrase in userBio:
+                for date in searchDates:
+                    if phrase.find(date) != -1:
+                        print(f"Date: {date} found in {user['username']} Bio")
+    else:
+        print("No Initials or Dates Found")
 
