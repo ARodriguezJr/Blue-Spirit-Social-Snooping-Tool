@@ -46,6 +46,7 @@ if args.searchFakes:
 
     followingNames = []
     followerNames = []
+    myFakes = []
 
     for user in myFollowing:
         followingNames.append(user['username'])
@@ -189,34 +190,60 @@ for targetName in tgtUsernames:
         # TODO: Find a way to speed this up?
         # TODO: Add delay to prevent max API requests per minute?
         foundFollowersInfo = []
-        foundFollowingInfo = []
+        foundFollowingsInfo = []
 
         # TODO: Sleep for seconds based on error message instead of amount of calls made
-        APITimer = 0
         for user in foundFollowersRaw:
             print(f"SEARCHING FOR FOLLOWER: {user['username']}")
             api.searchUsername(user['username'])
             foundFollowerInfo = api.LastJson
+
+            api.searchUsername(user['username'])
+            foundFollowerInfo = api.LastJson
+            time.sleep(0.5)
             foundFollowersInfo.append(foundFollowerInfo)
-            APITimer += 1
 
-            # Waits 2 seconds per 50 API calls to prevent generating errors
-            if APITimer >= 50:
-                time.sleep(2)
-                APITimer = 0
 
-        APITimer = 0
+
+        print("Finished followers bio parsing")
+        '''
+        for user in foundFollowersRaw:
+            print(f"SEARCHING FOR FOLLOWER: {user['username']}")
+            api.searchUsername(user['username'])
+            foundFollowerInfo = api.LastJson
+
+            # Waits then redoes request if request fails
+            if foundFollowerInfo['status'] == 'fail':
+                time.sleep(80)
+                api.searchUsername(user['username'])
+                foundFollowerInfo = api.LastJson
+            foundFollowersInfo.append(foundFollowerInfo)
+
+        '''
+        '''
         for user in foundFollowingRaw:
             print(f"SEARCHING FOR FOLLOWING: {user['username']}")
             api.searchUsername(user['username'])
             foundFollowingInfo = api.LastJson
-            foundFollowingsInfo.append(foundFollowingInfo)
-            APITimer += 1
 
-            # Waits 2 seconds per 50 API calls to prevent generating errors
-            if APITimer >= 80:
-                time.sleep(2)
-                APITimer = 0
+            # Waits then redoes request if request fails
+            if foundFollowingInfo['status'] == 'fail':
+                time.sleep(80)
+                api.searchUsername(user['username'])
+                foundFollowingInfo = api.LastJson
+            foundFollowingsInfo.append(foundFollowingInfo)
+
+        '''
+
+        for user in foundFollowingRaw:
+            print(f"SEARCHING FOR FOLLOWING: {user['username']}")
+            api.searchUsername(user['username'])
+            foundFollowingInfo = api.LastJson
+
+            api.searchUsername(user['username'])
+            foundFollowingInfo = api.LastJson
+            time.sleep(1)
+            foundFollowingsInfo.append(foundFollowingInfo)
 
         for user in foundFollowersInfo:
             #TODO: Also work on parsing username for initials
