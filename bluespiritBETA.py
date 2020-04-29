@@ -22,18 +22,19 @@ api.login()
 
 
 ######### START GUI ##########
+window = tk.Tk(className="Blue Spirit Social Snooping")
 
-mainTitle = tk.Label(text="Blue Spirit Instagram Snooping Tool")
+mainTitle = tk.Label(text="Blue Spirit Instagram Snooping Tool", fg="yellow", bg="black")
 
-targetTitle = tk.Label(text="Enter your target's Instagram Handle")
+targetTitle = tk.Label(text="Enter your target's Instagram Handle", fg="yellow", bg="black")
 targetEntry = tk.Entry(width=50)
-userTitle = tk.Label(text="Your Details")
+userTitle = tk.Label(text="Your Details", fg="yellow", bg="black")
 userDetails = tk.Text(width=100, height=7)
-fakesTitle = tk.Label(text="Who Doesn't Follow You Back")
+fakesTitle = tk.Label(text="Who Doesn't Follow You Back", fg="yellow", bg="black")
 fakesDetails = tk.Text(width=100, height=7)
-targetInfoTitle = tk.Label(text="Your Target's Details")
+targetInfoTitle = tk.Label(text="Your Target's Details", fg="yellow", bg="black")
 targetDetails = tk.Text(width=100, height=7)
-familyTitle = tk.Label(text="Your Target's Family Members on Instagram")
+familyTitle = tk.Label(text="Your Target's Family Members on Instagram", fg="yellow", bg="black")
 familyDetails = tk.Text(width=100, height=7)
 
 
@@ -59,7 +60,8 @@ familyTitle.pack()
 familyDetails.pack()
 
 
-window = tk.Tk()
+
+window['bg'] = "black"
 window.mainloop()
 
 

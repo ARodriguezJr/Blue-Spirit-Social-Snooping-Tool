@@ -48,7 +48,8 @@ def run_scan(api, targetEntry, userDetails, fakesDetails, targetDetails, familyD
         if username not in followerNames:
             myFakes.append(username)
 
-    fakesDetails.insert(tk.END, myFakes)
+    for fake in myFakes:
+        fakesDetails.insert(tk.END, fake + "\n")
 
 
 
@@ -127,7 +128,7 @@ def run_scan(api, targetEntry, userDetails, fakesDetails, targetDetails, familyD
     #print(f"FOUND FAMILY: {uniqueFamily}\n\n\n")
     for member in uniqueFamily:
         #TODO: Might need to fix inserting, might overwrite
-        familyDetails.insert(tk.END, member['username'])
+        familyDetails.insert(tk.END, member['username'] + "\n")
     
     #TODO: Remove duplicates
 
