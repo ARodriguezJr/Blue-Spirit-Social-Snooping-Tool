@@ -7,6 +7,7 @@ import tkinter as tk
 
 #TODO: Remove emojis from bios and names
 #TODO: Clear your profile info box after each scan
+#TODO: account for mass amounts of data/celebrities
 
 def strip_accents(s):
    return ''.join(c for c in unicodedata.normalize('NFD', s)

@@ -7,7 +7,7 @@ import unicodedata
 import re
 import time
 import tkinter as tk
-import functions as scan
+import functionsBETA as scan
 
 
 parser = argparse.ArgumentParser(description="Blue Spirit Instagram Snooping Tool")
@@ -19,6 +19,7 @@ myPassword = getpass.getpass(prompt="Please enter password: ")
 
 api = InstagramAPI(myUsername, myPassword)
 api.login()
+# Script fails if login fails
 
 
 ######### START GUI ##########
@@ -47,6 +48,8 @@ submit = tk.Button(
     command= lambda: scan.run_scan(api, targetEntry, userDetails, fakesDetails, targetDetails, familyDetails)
 )
 
+# Pack all widgets to GUI for display
+
 targetTitle.pack()
 targetEntry.pack()
 submit.pack()
@@ -58,10 +61,9 @@ targetInfoTitle.pack()
 targetDetails.pack()
 familyTitle.pack()
 familyDetails.pack()
-
-
-
 window['bg'] = "black"
+
+# Start listening for events
 window.mainloop()
 
 

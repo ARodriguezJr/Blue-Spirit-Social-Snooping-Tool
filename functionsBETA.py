@@ -12,6 +12,8 @@ def strip_accents(s):
                   if unicodedata.category(c) != 'Mn')
 
 def run_scan(api, targetEntry, userDetails, fakesDetails, targetDetails, familyDetails):
+    # Clear data fields before running a scan
+    userDetails.delete(1.0, tk.END)
     fakesDetails.delete(1.0, tk.END)
     targetDetails.delete(1.0, tk.END)
     familyDetails.delete(1.0, tk.END)
@@ -27,7 +29,6 @@ def run_scan(api, targetEntry, userDetails, fakesDetails, targetDetails, familyD
     myProfile = api.LastJson
 
     userDetails.insert(tk.END, "USERNAME: " + myProfile['user']['username'] + "\nNAME: " + myProfile['user']['full_name']  + "\nID: " + str(myProfile['user']['pk']))
-    #print(myProfile)
 
     #TODO: if args.searchFakes:
     myFollowers = api.getTotalSelfFollowers()
@@ -43,11 +44,12 @@ def run_scan(api, targetEntry, userDetails, fakesDetails, targetDetails, familyD
     for user in myFollowers:
         followerNames.append(user['username'])
 
+    # Compare Followers vs. Following to generate not followed back list
     for username in followingNames:
-        #print(username)
         if username not in followerNames:
             myFakes.append(username)
 
+    # Push data to GUI
     for fake in myFakes:
         fakesDetails.insert(tk.END, fake + "\n")
 
@@ -67,6 +69,7 @@ def run_scan(api, targetEntry, userDetails, fakesDetails, targetDetails, familyD
 
     print(f"\nSEARCHING FOR: {targetName}")
 
+    # Search for Target username
     api.searchUsername(targetName)
     foundUser = api.LastJson
     if foundUser['status'] == "fail":
@@ -84,6 +87,7 @@ def run_scan(api, targetEntry, userDetails, fakesDetails, targetDetails, familyD
     
     foundRealName = foundRealName.split(" ")
 
+    # Create two names, one with accents and one without
     foundLastNames = []
     foundLastNames.append(foundRealName[-1])    # Raw name
     foundLastNames.append(strip_accents(foundLastNames[0]))     # Name stripped of accents
@@ -93,14 +97,14 @@ def run_scan(api, targetEntry, userDetails, fakesDetails, targetDetails, familyD
     #TODO: Remove duplicates
     #TODO: ask for search intensity, if strong, make new names of related names
 
-    #print("SEARCHING FOR: " + foundLastNames)
-
     # Get complete list of followers and following for parsing
     foundFollowersRaw = api.getTotalFollowers(foundID)      
     foundFollowingRaw = api.getTotalFollowings(foundID)
 
     # Array to hold family members info
-    foundFamily = []        
+    foundFamily = []       
+
+    # For each follower/following check for last name in both the real and username 
     for user in foundFollowersRaw:
         personUser = user['username']
         personReal = user['full_name']
@@ -125,12 +129,28 @@ def run_scan(api, targetEntry, userDetails, fakesDetails, targetDetails, familyD
         if i not in uniqueFamily: 
             uniqueFamily.append(i) 
 
-    #print(f"FOUND FAMILY: {uniqueFamily}\n\n\n")
+    
     for member in uniqueFamily:
         #TODO: Might need to fix inserting, might overwrite
         familyDetails.insert(tk.END, member['username'] + "\n")
     
-    #TODO: Remove duplicates
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         ########### START SIGNIFICANT OTHER REPORTING ################
         #TODO: ENDING CODE HERE FOR WORKING DEMO
